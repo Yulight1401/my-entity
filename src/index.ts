@@ -15,6 +15,8 @@ interface EntityConfig<S, Q> {
   pull: (q?: Q) => Promise<S>;
   /** 更新接口体，同时更新本地数据 */
   put?: (data: S) => Promise<S>;
+  /** 删除实体， 同时更新本地数据 */
+  delete?: (data: S) => Promise<S>;
   onError?: (error: any) => void;
   /** 订阅数据进行刷新, 默认为空，也就是挂载时自动刷新 */
   refreshDeps?: any[];
@@ -47,7 +49,7 @@ export const useEntityData = <S, Q>(config: EntityConfig<S, Q>) => {
 
   /** 初始化，会调用pull方法 */
   const refresh = useCallback(async (newQd?: Q) => {
-    let currentQd = newQd || query;
+    const currentQd = newQd || query;
     setLoading(true);
     try {
       const currentRequest = ++requestCounter.current; // 增加计数器
@@ -76,13 +78,13 @@ export const useEntityData = <S, Q>(config: EntityConfig<S, Q>) => {
     ...(config.refreshDeps || []),
   ])
 
-  const put = useCallback(async (cf?: QueryConfig) => {
-    if (!config?.put) {
+  const postReq = useCallback(async (key: 'delete' | 'put',cf?: QueryConfig) => {
+    if (!config?.[key]) {
       return;
     }
     try {
       const currentRequest = ++requestCounter.current; // 增加计数器
-      const data = await config?.put(state);
+      const data = await config?.[key](state);
       if (cf?.refresh) {
         refresh();
       }
@@ -95,6 +97,20 @@ export const useEntityData = <S, Q>(config: EntityConfig<S, Q>) => {
     } finally {
       setPutLoading(false);
     }
+  }, [state]);
+
+  const put = useCallback(async (cf?: QueryConfig) => {
+    if (!config?.put) {
+      return;
+    }
+    postReq('put', cf);
+  }, [state]);
+
+  const del = useCallback(async (cf?: QueryConfig) => {
+    if (!config?.delete) {
+      return;
+    }
+    postReq('delete', cf);
   }, [state]);
 
   const setQueryData = useCallback((newQ: Partial<Q>, cf?: QueryConfig) => {
@@ -140,6 +156,7 @@ export const useEntityData = <S, Q>(config: EntityConfig<S, Q>) => {
     createQueryChange,
     createStateChange,
     put,
+    del,
     reset,
     refresh,
   }
