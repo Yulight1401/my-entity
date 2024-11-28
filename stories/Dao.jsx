@@ -1,11 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Button } from './Button';
-import { useEntityData } from '../src';
-import './header.css';
+import { createEntityContext, useEntityData } from '../src';
 
-export const Dao = ({ user, onLogin, onLogout, onCreateAccount }) => {
+const useTest = () => {
 
   const entityManager = useEntityData({
     state: {
@@ -16,6 +14,14 @@ export const Dao = ({ user, onLogin, onLogout, onCreateAccount }) => {
       date: '2021-01-01',
       type: 2,
       id: '231qw123'
+    },
+    create:async (state) => {
+      console.log('create', state);
+      await new Promise((res) => {
+        setTimeout(() => {
+          res();
+        }, Math.random() * 1500)
+      });
     },
     pull: async (qd) => {
       console.log('pull', qd);
@@ -46,11 +52,32 @@ export const Dao = ({ user, onLogin, onLogout, onCreateAccount }) => {
     }
   });
 
+  return entityManager;
+
+}
+
+
+export const Dao = ({ user, onLogin, onLogout, onCreateAccount }) => {
+
+  const entityManager = useTest();
   const dateChange = entityManager.createQueryChange('date');
-  const typeChange = entityManager.createQueryChange('type');
+  const typeChange = entityManager.createStateChange('type');
   const idChange = entityManager.createQueryChange('id', {
     refresh: true
   });
+
+  const EntityContext = createEntityContext();
+
+  function CustomCmp() {
+    const entityManager = EntityContext.useContext();
+    return (
+      <div style={{background: 'gray'}}>
+        CustomCmp:
+        {entityManager.state.test}
+        {entityManager.state.test2}
+      </div>
+    )
+  }
 
 
   return (
@@ -68,7 +95,15 @@ export const Dao = ({ user, onLogin, onLogout, onCreateAccount }) => {
       })} placeholder='custom-input'/>
       <button onClick={entityManager.refresh}>查询</button>
       <button onClick={entityManager.put}>提交</button>
+      <button onClick={() => {
+        entityManager.setState({
+          test: 'hasPosted'
+        }, 'create')
+      }}>提交2</button>
       <button onClick={entityManager.reset}>重置</button>
+      <EntityContext.Provider value={entityManager}>
+        <CustomCmp />
+      </EntityContext.Provider>
     </header>
   )
 };

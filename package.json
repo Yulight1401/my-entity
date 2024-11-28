@@ -1,15 +1,16 @@
 {
   "name": "my-entity",
-  "version": "0.0.2",
+  "version": "0.0.17",
   "description": "",
   "main": "dist/my-lib.umd.js",
   "module": "dist/my-lib.es.js",
   "types": "dist/types/index.d.ts",
   "scripts": {
+    "publish-to-npm": "pnpm run build && npm publish --registry=https://registry.npmjs.org",
     "test": "echo \"Error: no test specified\" && exit 1",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "dev": "vite",
+    "dev": "storybook dev -p 6006",
     "build": "vite build && tsc --declaration --emitDeclarationOnly && cp package.json dist",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"

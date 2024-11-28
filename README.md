@@ -229,6 +229,44 @@ const AdvancedComponent = () => {
 };
 ```
 
+#### 使用createEntityContext 创建上下文。
+
+```typescript
+import React from 'react';
+import { createEntityContext } from './path-to-createEntityContext';
+import { useEntityData } from './path-to-useEntityData'; // 假设 useEntityData 是一个自定义 Hook
+
+// 创建上下文
+const { Provider, useContext } = createEntityContext<MyEntityType, MyQueryType>();
+
+// 提供上下文
+const MyEntityProvider: React.FC = ({ children }) => {
+  const entityData = useEntityData<MyEntityType, MyQueryType>();
+
+  return (
+    <Provider value={entityData}>
+      {children}
+    </Provider>
+  );
+};
+
+// 使用上下文
+const MyComponent: React.FC = () => {
+  const entityData = useContext();
+
+  if (!entityData) {
+    throw new Error('MyComponent must be used within a MyEntityProvider');
+  }
+
+  return (
+    <div>
+      {/* 使用 entityData 渲染组件 */}
+      <p>{entityData.someProperty}</p>
+    </div>
+  );
+};
+```
+
 ### API 详细说明
 
 #### `EntityConfig<S, Q>`
@@ -268,6 +306,21 @@ const AdvancedComponent = () => {
 | ----- | ---------- |
 | 0.0.1 | 初始版本   |
 | 0.0.2 | 完善ReadMe |
+| 0.0.3 | 增加del 方法 |
+| 0.0.4 | 增加create 方法 |
+| 0.0.5 | 更改 refreshDeps 方法 |
+| 0.0.6 | 优化state处理 |
+| 0.0.7 | fix: 上传请求使用newState |
+| 0.0.8 | fix: 上传请求使用最新state, setState增加action |
+| 0.0.9 | fix: putloading无效 |
+| 0.0.10 | feat: mergeStateData become Promise, Add Create Context method |
+| 0.0.11 | fix: mergeData undefined break|
+| 0.0.12 | fix: put return type can be void; fix: put state is not newest|
+| 0.0.13 | fix: array merge become a object|
+| 0.0.14 | fix: merge break|
+| 0.0.15 | feat: noEmitError config； fix: 修复setState action执行了两次|
+| 0.0.16 | fix: state is not newest|
+| 0.0.17 | fix: reset can not to pull new entity|
 
 ## 版本规划
 0.0.3 增加Provider Factory支持
